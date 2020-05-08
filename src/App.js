@@ -2,7 +2,7 @@ import React from "react";
 import io from "socket.io-client";
 import "./App.css";
 
-const constraints = { video: true };
+const constraints = { video: true, audio: true };
 class App extends React.Component {
   state = {
     desc: "",
@@ -24,7 +24,7 @@ class App extends React.Component {
   };
 
   componentDidMount() {
-    this.socket = io("https://aa7bdbc2.ngrok.io/webrtcPeer", {
+    this.socket = io("https://skyvideocall.herokuapp.com/webrtcPeer", {
       path: "/webrtc",
     });
 
@@ -35,18 +35,21 @@ class App extends React.Component {
     this.socket.on("offerOrAnswer", (sdp) => {
       const stringify = JSON.stringify(sdp);
       this.setState({ desc: stringify });
-
+      if (sdp.type === "offer") alert("call incoming");
       this.pc.setRemoteDescription(new RTCSessionDescription(sdp));
     });
     this.socket.on("candidate", (candidate) => {
       console.log("adding candidates");
       this.pc.addIceCandidate(new RTCIceCandidate(candidate));
     });
-    const pc_config = {
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    var peerConnectionConfig = {
+      iceServers: [
+        { urls: "stun:stun1.l.google.com:19302" },
+        { urls: "stun:stun.l.google.com:19302" },
+      ],
     };
 
-    this.pc = new RTCPeerConnection(pc_config);
+    this.pc = new RTCPeerConnection(peerConnectionConfig);
     this.pc.onicecandidate = (e) => {
       if (e.candidate) this.sendToPeer("candidate", e.candidate);
     };
@@ -109,7 +112,12 @@ class App extends React.Component {
     console.log("c", this.candidates);
     return (
       <div className="App">
-        <video className="streamVideo" ref={this.localref} autoPlay></video>
+        <video
+          className="streamVideo"
+          ref={this.localref}
+          autoPlay
+          muted="muted"
+        ></video>
         <video className="streamVideo" ref={this.remoteVideo} autoPlay></video>
         <br />
         <button onClick={() => this.createOffer()}>create offer</button>
