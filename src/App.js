@@ -24,7 +24,7 @@ class App extends React.Component {
   };
 
   componentDidMount() {
-    this.socket = io("https://9a4fdfb1.ngrok.io/webrtcPeer", {
+    this.socket = io("https://aa7bdbc2.ngrok.io/webrtcPeer", {
       path: "/webrtc",
     });
 
